@@ -1,28 +1,56 @@
-# require_relative './models/patient.rb'
-require_relative './models/doctor.rb'
-require_relative './models/appointment.rb'
+puts "🌱 SEEDING DATA....."
+
+#Faker Code
 require 'faker'
+require 'active_record'
+require_relative 'app/models/patient'
+require_relative 'app/models/doctor'
+require_relative 'app/models/appointment'
 
-# Clear existing data
-Appointment.destroy_all
-Patient.destroy_all
-Doctor.destroy_all
+# Establish database connection
+ActiveRecord::Base.establish_connection(
+  adapter: 'sqlite3',
+  database: 'db/development.sqlite3'
+)
+require_relative 'db/schema'
 
-# Create patients
+# Define your classes and their associations
+class Patient < ActiveRecord::Base
+  has_many :appointments
+  has_many :doctors, through: :appointments
+
+  validates :first_name, presence: true
+  validates :last_name, presence: true
+end
+
+class Doctor < ActiveRecord::Base
+  has_many :appointments
+  has_many :patients, through: :appointments
+end
+
+class Appointment < ActiveRecord::Base
+  belongs_to :patient
+  belongs_to :doctor
+  attribute :appointment_date, :datetime
+end
+
+# Seed data
 5.times do
   Patient.create(
-    name: Faker::Name.name,
-    age: rand(18..70)
+    first_name: Faker::Name.first_name,
+    last_name: Faker::Name.last_name,
+    
   )
 end
 
-# Create doctors
 5.times do
   Doctor.create(
-    name: Faker::Name.first_name,
-    specialty: Faker::Job.title
+    first_name: Faker::Name.first_name,
+    last_name: Faker::Name.last_name,
   )
 end
+
+puts 'Seed data has been created successfully!'
 
 # Additional patients
 additional_patients = [
@@ -48,11 +76,16 @@ end
 Appointment.create(
   patient_id: Patient.find_by(name: "John Doe").id,
   doctor_id: Doctor.find_by(name: additional_doctors[0][:name]).id,
-  appointment_date: DateTime.now + 2
+  
 )
 
 Appointment.create(
   patient_id: Patient.find_by(name: "Jane Smith").id,
   doctor_id: Doctor.find_by(name: additional_doctors[1][:name]).id,
-  appointment_date: DateTime.now + 4
+  
 )
+
+
+puts "🌱 DONE SEEDING!!!!"
+
+

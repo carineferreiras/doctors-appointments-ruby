@@ -1,6 +1,6 @@
-require 'Gemfile'
-require 'bundler/setup'
+ENV["RACK_ENV"] ||= "development"
 
-require_relative "./models/appointment.rb"
-require_relative "./models/doctor.rb"
-require_relative "./models/patient.rb"
+require 'bundler/setup'
+Bundler.require(:default, ENV["RACK_ENV"])
+
+require_all 'app/models'
