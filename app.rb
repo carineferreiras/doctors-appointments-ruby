@@ -103,39 +103,43 @@ end
 
 
 
-
-
-
 def delete_appointment
   puts 'Please enter your name:'
   name = gets.chomp
 
-  display_doctors
-
-  puts 'Please choose a doctor (enter the number):'
-  doctor_choice = gets.chomp.to_i
-
-  doctor = case doctor_choice
-           when 1 then Doctor.find_by(full_name: 'Donette Kunde')
-           when 2 then Doctor.find_by(full_name: 'Pres. Lynn Beer')
-           else
-             puts 'Invalid doctor selection.'
-             return
-           end
-
-  if doctor
-    Appointment.joins(:patient, :doctor)
-               .where('patients.first_name = ? AND doctors.id = ?', name, doctor.id)
-               .destroy_all
-    puts 'Appointments deleted successfully!'
-  else
-    puts 'Doctor not found.'
+  patient = Patient.find_by(first_name: name)
+  if patient.nil?
+    puts 'Patient not found.'
+    return
   end
+
+  appointments = Appointment.joins(:patient, :doctor)
+                            .where('patients.first_name = ?', name)
+
+  if appointments.empty?
+    puts 'No appointments found for the patient.'
+    return
+  end
+
+  puts 'Appointments:'
+  appointments.each do |appointment|
+    puts "ID: #{appointment.id}, Patient: #{appointment.patient.first_name}, Doctor: #{appointment.doctor.full_name}, Date: #{appointment.appointment_date}"
+  end
+
+  puts 'Please enter the ID of the appointment to delete:'
+  appointment_id = gets.chomp.to_i
+
+  appointment = Appointment.find_by(id: appointment_id)
+  if appointment.nil?
+    puts 'Invalid appointment ID.'
+    return
+  end
+
+  appointment.destroy
+  puts 'Appointment deleted successfully!'
 
   run
 end
-
-
 
 
 

@@ -20,18 +20,18 @@ ActiveRecord::Schema.define(version: 2023_06_19_073819) do
 
   create_table "doctors", force: :cascade do |t|
     t.string "first_name"
-    # t.string "last_name"
-    # t.string "name"
-    # t.string "full_name"
+    t.string "last_name"
+    t.string "name"
+    t.string "full_name"
   end
 
   create_table "patients", force: :cascade do |t|
     t.string "first_name"
-  #   t.string "last_name"
-  #   t.string "sex"
-  #   t.integer "age"
-  #   t.string "dob"
-  #   t.string "address"
-  # end
+    t.string "last_name"
+    t.string "sex"
+    t.integer "age"
+    t.string "dob"
+    t.string "address"
+  end
 
 end
