@@ -27,4 +27,6 @@ group :development do
   gem "faker", "~> 2.18"
   
   gem "pry"
+
+  gem "activesupport", "~> 6.1.7.3"
 end

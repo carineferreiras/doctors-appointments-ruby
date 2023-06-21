@@ -1,4 +1,6 @@
 class Appointment < ActiveRecord::Base 
-    has_many :appointments
-    has_many :doctors, through: :appointments
+
+    belongs_to :patient
+    belongs_to :doctor
+    attribute :name, :string
 end

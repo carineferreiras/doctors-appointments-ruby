@@ -10,27 +10,28 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2023_06_08_014131) do
+ActiveRecord::Schema.define(version: 2023_06_19_073819) do
 
-    create_table "appointments", force: :cascade do |t|
-      t.integer "patient_id"
-      t.integer "doctor_id"
-      t.datetime "appointment_date"
-    end
-  
-    create_table "doctors", force: :cascade do |t|
-      t.string "first_name"
-      t.string "last_name"
-    end
-  
-    create_table "patients", force: :cascade do |t|
-      t.string "first_name"
-      t.string "last_name"
-      t.string "sex"
-      t.integer "age"
-      t.string "dob"
-      t.string "address"
-    end
-  
+  create_table "appointments", force: :cascade do |t|
+    t.integer "patient_id"
+    t.integer "doctor_id"
+    t.datetime "appointment_date", precision: 6
   end
-  
+
+  create_table "doctors", force: :cascade do |t|
+    t.string "first_name"
+    # t.string "last_name"
+    # t.string "name"
+    # t.string "full_name"
+  end
+
+  create_table "patients", force: :cascade do |t|
+    t.string "first_name"
+  #   t.string "last_name"
+  #   t.string "sex"
+  #   t.integer "age"
+  #   t.string "dob"
+  #   t.string "address"
+  # end
+
+end

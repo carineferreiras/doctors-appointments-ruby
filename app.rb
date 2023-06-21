@@ -1,51 +1,12 @@
-require 'faker'
 require 'active_record'
-require 'sqlite3'
-require_relative 'app/models/patient'
-require_relative 'app/models/doctor'
-require_relative 'app/models/appointment'
+require_relative './config/environment'
 
 ActiveRecord::Base.establish_connection(
   adapter: 'sqlite3',
   database: 'db/development.sqlite3'
 )
-require './db/schema.rb'
 
-# Define your classes and their associations
-class Patient < ActiveRecord::Base
-  has_many :appointments
-end
-
-class Doctor < ActiveRecord::Base
-  has_many :appointments
-end
-
-class Appointment < ActiveRecord::Base
-    belongs_to :patient
-    belongs_to :doctor
-end
-  
-
-# Seed data
-5.times do
-  Patient.create(
-    first_name: Faker::Name.first_name,
-    last_name: Faker::Name.last_name,
-    sex: Faker::Gender.type,
-    age: rand(18..70),
-    dob: Faker::Date.birthday(min_age: 18, max_age: 70),
-    address: Faker::Address.full_address
-  )
-end
-
-5.times do
-  Doctor.create(
-    first_name: Faker::Name.first_name,
-    last_name: Faker::Name.last_name,
-  )
-end
-
-# CLI interface and application logic
+# CLI 
 class CLI
   def run
     puts 'Welcome to the Appointment Scheduler!'
@@ -73,21 +34,25 @@ class CLI
     end
   end
 
+ 
+  
 
-def schedule_appointment
+  def schedule_appointment
     puts 'Please enter your name:'
     name = gets.chomp
   
-    puts 'Please enter your preferred doctor:'
-    doctor_name = gets.chomp
+    display_doctors
   
-    # Check if the doctor already exists
-    doctor = Doctor.find_by(first_name: doctor_name)
+    puts 'Please choose a doctor (enter the number):'
+    doctor_choice = gets.chomp.to_i
   
-    # If the doctor doesn't exist, create a new one
-    unless doctor
-      doctor = Doctor.create(first_name: doctor_name)
-    end
+    doctor = case doctor_choice
+             when 1 then Doctor.find_by(full_name: 'Donette Kunde')
+             when 2 then Doctor.find_by(full_name: 'Pres. Lynn Beer')
+             else
+               puts 'Invalid doctor selection.'
+               return
+             end
   
     # Find or create the patient
     patient = Patient.find_or_create_by(first_name: name)
@@ -109,52 +74,77 @@ def schedule_appointment
   end
   
 
-  def view_appointments
- puts 'Upcoming Appointments:'
-  Appointment.includes(:patient, :doctor).each do |appointment|
-    if appointment.patient_id && appointment.doctor_id
-      patient = appointment.patient
-      doctor = appointment.doctor
-      puts "Patient: #{patient.first_name} #{patient.last_name}"
-      puts "Doctor: #{doctor.first_name} #{doctor.last_name}"
-      puts "Appointment Date: #{appointment.appointment_date}"
+
+
+
+def display_doctors
+  puts 'Available Doctors:'
+  Doctor.pluck(:full_name).each_with_index do |name, index|
+    puts "#{index + 1}. #{name}"
+  end
+end
+
+
+
+def view_appointments
+  puts 'Upcoming Appointments:'
+  Appointment.includes(:doctor, :patient).each do |appointment|
+    if appointment.patient && appointment.doctor && appointment.valid?
+      puts "Appointment: ID: #{appointment.id}, Patient: #{appointment.patient.first_name}, Doctor: #{appointment.doctor.full_name}, Date: #{appointment.appointment_date}"
       puts '---'
     else
-      puts "Incomplete appointment data found. Appointment: #{appointment.inspect}"
+      puts 'No appointment found.'
     end
   end
-run
-    end
+  run
+end
+
+
+
+
+
+
 
 
 def delete_appointment
-    puts 'Please enter your name:'
-    name = gets.chomp
-    
-    puts 'Please enter the doctor name:'
-    doctor_name = gets.chomp
-    
-    appointment = Appointment.joins(:patient, :doctor)
-                            .where('patients.first_name = ? AND doctors.first_name = ?', name, doctor_name)
-                            .first
-    
-    if appointment
-      appointment.destroy
-      puts 'Appointment deleted successfully!'
-    else
-      puts 'Appointment not found.'
-    end
-    
-    run
-  end
-  
+  puts 'Please enter your name:'
+  name = gets.chomp
 
-  def exit_app
-    puts 'Thank you for using the Appointment Scheduler. Goodbye!'
-    exit
+  display_doctors
+
+  puts 'Please choose a doctor (enter the number):'
+  doctor_choice = gets.chomp.to_i
+
+  doctor = case doctor_choice
+           when 1 then Doctor.find_by(full_name: 'Donette Kunde')
+           when 2 then Doctor.find_by(full_name: 'Pres. Lynn Beer')
+           else
+             puts 'Invalid doctor selection.'
+             return
+           end
+
+  if doctor
+    Appointment.joins(:patient, :doctor)
+               .where('patients.first_name = ? AND doctors.id = ?', name, doctor.id)
+               .destroy_all
+    puts 'Appointments deleted successfully!'
+  else
+    puts 'Doctor not found.'
   end
+
+  run
+end
+
+
+
+
+
+
+def exit_app
+  puts 'Thank you for using the Appointment Scheduler. Goodbye!'
+  exit
+end
 end
 
 # Run the CLI application
 CLI.new.run
-
